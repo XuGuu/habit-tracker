@@ -121,6 +121,22 @@
       return streak;
     }
 
+    // 计算"历史最长连续天数"：扫描所有打卡日期，找出最长的连续段
+    function bestStreak(h) {
+      const days = Object.keys(h.dates).sort(); // 升序排列
+      if (days.length === 0) return 0;
+      let best = 1, cur = 1;
+      for (let i = 1; i < days.length; i++) {
+        // 判断相邻两天是否真的相差 1 天（避免跨月份算错）
+        const prev = new Date(days[i - 1] + 'T00:00:00');
+        const curr = new Date(days[i] + 'T00:00:00');
+        const diff = Math.round((curr - prev) / 86400000);
+        if (diff === 1) { cur++; best = Math.max(best, cur); }
+        else cur = 1;
+      }
+      return best;
+    }
+
     // 总打卡次数
     function totalDone(h) { return Object.keys(h.dates).length; }
 
@@ -163,7 +179,7 @@
           </div>
           ${heatmapHtml(h)}
           <div class="legend">少 <span class="cell"></span><span class="cell lvl1"></span><span class="cell lvl2"></span><span class="cell lvl3"></span> 多</div>
-          <div class="stats">累计打卡 ${totalDone(h)} 天</div>
+          <div class="stats">累计 ${totalDone(h)} 天 · 历史最长 ${bestStreak(h)} 天</div>
         </div>`;
       }).join('');
     }
