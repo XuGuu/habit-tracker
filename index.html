@@ -36,7 +36,8 @@
       padding: 18px; margin-bottom: 16px;
     }
     .habit-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-    .habit-name { font-size: 17px; font-weight: 600; flex: 1; }
+    .habit-name { font-size: 17px; font-weight: 600; flex: 1; cursor: text; }
+    .habit-name input { font-size: 17px; font-weight: 600; padding: 4px 8px; border-radius: 6px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; outline: none; width: 100%; }
     .streak { font-size: 13px; color: #f0a500; background: rgba(240,165,0,0.12); padding: 4px 10px; border-radius: 20px; white-space: nowrap; }
     .check-btn { padding: 8px 14px; font-size: 13px; }
     .check-btn.done { background: #1f6feb; }
@@ -108,6 +109,24 @@
       save(); render();
     }
 
+    // 双击习惯名称进入编辑：回车/失焦保存，Esc 取消
+    function renameHabit(id, span) {
+      const h = habits.find(x => x.id === id); if (!h) return;
+      const input = document.createElement('input');
+      input.type = 'text'; input.value = h.name;
+      span.replaceWith(input); input.focus(); input.select();
+      const commit = () => {
+        const v = input.value.trim();
+        if (v && v !== h.name) { h.name = v; save(); }
+        render();
+      };
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter') commit();
+        else if (e.key === 'Escape') render();
+      });
+      input.addEventListener('blur', commit);
+    }
+
     // 计算"当前连续打卡天数"：从今天往回数，连续打卡了几天
     function currentStreak(h) {
       let streak = 0;
@@ -170,7 +189,7 @@
         return `
         <div class="habit">
           <div class="habit-head">
-            <span class="habit-name">${escapeHtml(h.name)}</span>
+            <span class="habit-name" ondblclick="renameHabit('${h.id}', this)" title="双击重命名">${escapeHtml(h.name)}</span>
             <span class="streak">🔥 连续 ${streak} 天</span>
             <button class="check-btn ${doneToday ? 'done' : ''}" onclick="toggleToday('${h.id}')">
               ${doneToday ? '✓ 今天已打卡' : '今天打卡'}
