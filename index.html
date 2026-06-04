@@ -69,6 +69,12 @@
     </div>
 
     <div id="habitList"></div>
+
+    <div style="text-align:center; margin-top: 24px; font-size: 13px;">
+      <a href="#" onclick="exportData(event)" style="color:#58a6ff; margin-right: 12px;">⬇ 导出数据</a>
+      <a href="#" onclick="document.getElementById('importFile').click()" style="color:#58a6ff;">⬆ 导入数据</a>
+      <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importData(event)">
+    </div>
   </div>
 
   <script>
@@ -201,6 +207,36 @@
           <div class="stats">累计 ${totalDone(h)} 天 · 历史最长 ${bestStreak(h)} 天</div>
         </div>`;
       }).join('');
+    }
+
+    // 导出：下载一份 JSON 备份（备份到电脑文件夹，换浏览器/换机器可恢复）
+    function exportData(e) {
+      e.preventDefault();
+      const blob = new Blob([JSON.stringify(habits, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `habits-${todayKey}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+    // 导入：读 JSON 文件，覆盖当前数据（导入前会让你确认一下）
+    function importData(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const data = JSON.parse(reader.result);
+          if (!Array.isArray(data)) throw new Error('文件格式不对');
+          if (!confirm(`将导入 ${data.length} 个习惯，会覆盖当前数据，继续？`)) return;
+          habits = data; save(); render();
+          alert('导入成功 ✅');
+        } catch (err) {
+          alert('导入失败：' + err.message);
+        } finally {
+          e.target.value = ''; // 允许下次再导同名文件
+        }
+      };
+      reader.readAsText(file);
     }
 
     function escapeHtml(s) {
