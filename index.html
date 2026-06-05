@@ -56,6 +56,9 @@
     .cell.lvl3 { background: #26a641; }
     .cell.today { outline: 1px solid #58a6ff; }
     .legend { display: flex; align-items: center; gap: 6px; justify-content: flex-end; font-size: 11px; color: #8b949e; margin-top: 8px; }
+    .note-row { display: flex; gap: 8px; margin-top: 12px; font-size: 13px; }
+    .note-row input { flex: 1; padding: 6px 10px; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: #e6edf3; font-size: 13px; outline: none; }
+    .note-row input::placeholder { color: #6e7681; }
 
     .empty { text-align: center; color: #6e7681; padding: 40px 0; font-size: 15px; }
     .stats { color: #8b949e; font-size: 12px; margin-top: 10px; }
@@ -125,6 +128,17 @@
       if (i < 0 || j < 0 || j >= habits.length) return;
       [habits[i], habits[j]] = [habits[j], habits[i]];
       save(); render();
+    }
+
+    // 给今天的打卡加备注（如"读了三章 + 喜欢"）。空字符串则删除该天的备注。
+    function setNote(id, text) {
+      const h = habits.find(x => x.id === id); if (!h) return;
+      h.notes = h.notes || {};
+      const t = (text || '').trim();
+      if (t) h.notes[todayKey] = t;
+      else delete h.notes[todayKey];
+      save();
+      // 不调用 render() 避免输入框失去焦点；下次刷新时就能看到
     }
 
     // 双击习惯名称进入编辑：回车/失焦保存，Esc 取消
@@ -201,7 +215,9 @@
         const k = dayKey(d);
         const done = h.dates[k];
         const isToday = k === todayKey;
-        cells.push(`<div class="cell ${done ? 'lvl3' : ''} ${isToday ? 'today' : ''}" title="${k}${done ? ' ✓ 已打卡' : ''}"></div>`);
+        const note = h.notes && h.notes[k];
+        const tip = `${k}${done ? ' ✓ 已打卡' : ''}${note ? '\n备注：' + note : ''}`;
+        cells.push(`<div class="cell ${done ? 'lvl3' : ''} ${isToday ? 'today' : ''}" title="${escapeHtml(tip)}"></div>`);
       }
       return `<div class="heatmap">${cells.join('')}</div>`;
     }
@@ -229,6 +245,11 @@
           </div>
           ${heatmapHtml(h)}
           <div class="legend">少 <span class="cell"></span><span class="cell lvl1"></span><span class="cell lvl2"></span><span class="cell lvl3"></span> 多</div>
+          ${doneToday ? `
+          <div class="note-row">
+            <input type="text" placeholder="今天的备注（可选）" value="${escapeHtml((h.notes && h.notes[todayKey]) || '')}"
+              onchange="setNote('${h.id}', this.value)">
+          </div>` : ''}
           <div class="stats">累计 ${totalDone(h)} 天 · 历史最长 ${bestStreak(h)} 天 · 本周 ${doneInLastDays(h, 7)}/7 · 本月 ${doneInLastDays(h, 30)}/30</div>
         </div>`;
       }).join('');
