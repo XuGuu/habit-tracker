@@ -108,11 +108,28 @@
     }
     document.getElementById('habitInput').addEventListener('keydown', e => { if (e.key === 'Enter') addHabit(); });
 
+    // 连续打卡到关键天数时弹一句鼓励（只在「新打上」时触发，取消打卡不弹）
+    const MILESTONES = {
+      3:   { emoji: '🌱', text: '3 天了，习惯的种子发芽啦' },
+      7:   { emoji: '🔥', text: '连续 7 天！一周的坚持很了不起' },
+      14:  { emoji: '🎯', text: '两周打卡，状态稳定下来了' },
+      21:  { emoji: '💪', text: '21 天 —— 据说习惯雏形已经成型' },
+      30:  { emoji: '🏆', text: '30 天！这是真·习惯了' },
+      50:  { emoji: '🚀', text: '50 天，你已经超过大多数人' },
+      100: { emoji: '🌟', text: '100 天！太厉害了，给自己点个奖励吧' },
+    };
     function toggleToday(id) {
       const h = habits.find(x => x.id === id);
-      if (h.dates[todayKey]) delete h.dates[todayKey];
+      const wasDone = !!h.dates[todayKey];
+      if (wasDone) delete h.dates[todayKey];
       else h.dates[todayKey] = true;
       save(); render();
+      // 刚打上卡 → 看看连续天数有没有命中里程碑
+      if (!wasDone) {
+        const s = currentStreak(h);
+        const m = MILESTONES[s];
+        if (m) setTimeout(() => alert(`${m.emoji} ${m.text}\n\n习惯：${h.name}`), 80);
+      }
     }
 
     function removeHabit(id) {
