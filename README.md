@@ -1,5 +1,8 @@
 # 🌱 习惯追踪器 Habit Tracker
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![No deps](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#)
+
 每天给习惯打卡，用一张「绿色热力图」（像 GitHub 主页的小方块）和「连续天数」激励自己坚持。
 纯前端、零依赖、双击即用，数据存在本地。
 
