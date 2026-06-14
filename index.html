@@ -8,6 +8,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="习惯打卡追踪器：热力图、连续天数、本周本月完成率。纯前端，数据存本地，不联网。">
+  <meta name="color-scheme" content="dark">
   <title>习惯追踪器</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -275,9 +277,9 @@
             <button class="check-btn ${doneToday ? 'done' : ''}" onclick="toggleToday('${h.id}')">
               ${doneToday ? '✓ 今天已打卡' : '今天打卡'}
             </button>
-            <button class="move" onclick="moveHabit('${h.id}', -1)" title="上移" ${idx === 0 ? 'disabled' : ''}>↑</button>
-            <button class="move" onclick="moveHabit('${h.id}', 1)" title="下移" ${idx === habits.length - 1 ? 'disabled' : ''}>↓</button>
-            <button class="trash" onclick="removeHabit('${h.id}')">🗑</button>
+            <button class="move" onclick="moveHabit('${h.id}', -1)" title="上移" aria-label="上移习惯" ${idx === 0 ? 'disabled' : ''}>↑</button>
+            <button class="move" onclick="moveHabit('${h.id}', 1)" title="下移" aria-label="下移习惯" ${idx === habits.length - 1 ? 'disabled' : ''}>↓</button>
+            <button class="trash" onclick="removeHabit('${h.id}')" title="删除" aria-label="删除习惯">🗑</button>
           </div>
           ${heatmapHtml(h)}
           <div class="legend">少 <span class="cell"></span><span class="cell lvl1"></span><span class="cell lvl2"></span><span class="cell lvl3"></span> 多</div>
