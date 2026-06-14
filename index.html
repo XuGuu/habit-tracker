@@ -87,8 +87,27 @@
     /* 数据结构：
        habits = [{ id, name, dates: { "2026-06-04": true, ... } }]
        dates 里只记录"打过卡的那天"。 */
-    let habits = JSON.parse(localStorage.getItem('habits') || '[]');
+    let habits = normalizeHabits(safeParse(localStorage.getItem('habits'), []));
     function save() { localStorage.setItem('habits', JSON.stringify(habits)); }
+
+    // 安全解析 JSON：localStorage 万一被改坏了也不会让整个页面崩溃
+    function safeParse(raw, fallback) {
+      try { return raw ? JSON.parse(raw) : fallback; } catch { return fallback; }
+    }
+    // 把任意数据规范成合法的习惯数组：补齐 id/name/dates，丢弃明显不合法的项。
+    // 既用于初次加载（防 localStorage 损坏），也用于导入（防别人给的文件结构不对）。
+    function normalizeHabits(arr) {
+      if (!Array.isArray(arr)) return [];
+      return arr.filter(h => h && typeof h === 'object' && !Array.isArray(h)).map((h, idx) => {
+        const out = {
+          id: (h.id !== undefined && h.id !== null) ? String(h.id) : ('h' + Date.now() + '-' + idx),
+          name: (typeof h.name === 'string' && h.name.trim()) ? h.name : '未命名习惯',
+          dates: (h.dates && typeof h.dates === 'object' && !Array.isArray(h.dates)) ? h.dates : {},
+        };
+        if (h.notes && typeof h.notes === 'object' && !Array.isArray(h.notes)) out.notes = h.notes;
+        return out;
+      });
+    }
 
     // 把日期变成 "YYYY-MM-DD" 字符串（用本地时间，避免时区错位）
     function dayKey(d) {
@@ -289,9 +308,11 @@
       reader.onload = () => {
         try {
           const data = JSON.parse(reader.result);
-          if (!Array.isArray(data)) throw new Error('文件格式不对');
-          if (!confirm(`将导入 ${data.length} 个习惯，会覆盖当前数据，继续？`)) return;
-          habits = data; save(); render();
+          if (!Array.isArray(data)) throw new Error('文件格式不对（应为习惯数组）');
+          const cleaned = normalizeHabits(data);   // 规范化，丢弃不合法的项
+          if (!cleaned.length) throw new Error('文件里没有有效的习惯数据');
+          if (!confirm(`将导入 ${cleaned.length} 个习惯，会覆盖当前数据，继续？`)) return;
+          habits = cleaned; save(); render();
           alert('导入成功 ✅');
         } catch (err) {
           alert('导入失败：' + err.message);
