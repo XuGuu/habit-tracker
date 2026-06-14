@@ -1,5 +1,6 @@
 # 🌱 习惯追踪器 Habit Tracker
 
+[![测试](https://github.com/XuGuu/habit-tracker/actions/workflows/test.yml/badge.svg)](https://github.com/XuGuu/habit-tracker/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![No deps](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](#)
 
@@ -29,6 +30,16 @@
 - 每个习惯只记录「打过卡的日期」，热力图和连续天数都是即时算出来的。
 - 数据存在浏览器 `localStorage` 里，不联网、不上传。
 - 「连续天数」的小巧思：如果今天还没打卡，就从昨天开始数，这样不会因为「今天还没打」就显示中断。
+
+## 🧪 跑测试
+
+连续天数、最长记录、完成率统计、数据规范化等纯逻辑抽在 [`habit-logic.js`](habit-logic.js)，用 Node 内置测试框架覆盖，**无需安装任何依赖**：
+
+```bash
+node --test test_habit_logic.js
+```
+
+每次 push 时 GitHub Actions 会自动在 Node 18/20/22 上跑测试。
 
 ## 📜 更新日志
 
